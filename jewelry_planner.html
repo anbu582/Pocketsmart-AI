@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Jewelry Budget Planner - PocketSmart AI</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="logo">PocketSmart AI</a>
+        <ul class="nav-links">
+            <li><a href="/home-planner">Home Planner</a></li>
+            <li><a href="/party-planner">Party Planner</a></li>
+            <li><a href="/jewelry-planner">Jewelry Planner</a></li>
+            <li><a href="/history">History</a></li>
+        </ul>
+    </nav>
+    <div class="container" style="max-width: 800px;">
+        <div class="card">
+            <h2>Jewelry Budget Planner</h2>
+            <form id="jewelryForm" enctype="multipart/form-data">
+                <label>Total Budget (₹)</label>
+                <input type="number" id="total_budget" required value="15000">
+                <label>Occasion</label>
+                <input type="text" id="occasion" required value="Wedding Reception">
+                <label>Style Preferences</label>
+                <textarea id="preferences" placeholder="E.g., Gold plated, traditional"></textarea>
+                <label>Upload Outfit Image (Optional)</label>
+                <input type="file" id="image" accept="image/*">
+                <button type="submit" class="btn" style="width: 100%;">Get Recommendations</button>
+            </form>
+        </div>
+        <div id="results" class="card" style="display: none;">
+            <h3>Your Personalized Jewelry Recommendations</h3>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('jewelryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('total_budget', document.getElementById('total_budget').value);
+            formData.append('occasion', document.getElementById('occasion').value);
+            formData.append('preferences', document.getElementById('preferences').value);
+            const imageFile = document.getElementById('image').files[0];
+            if (imageFile) formData.append('image', imageFile);
+            
+            const results = document.getElementById('results');
+            const resultsContent = document.getElementById('resultsContent');
+            const submitButton = e.currentTarget.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Building your plan...';
+            results.style.display = 'block';
+            resultsContent.textContent = 'Preparing recommendations...';
+            try {
+            const res = await fetch('/jewelry-budget', { method: 'POST', body: formData });
+            const result = await res.json();
+            if (!res.ok) throw new Error(result.detail || 'Unable to create recommendations right now.');
+            
+            let html = `<h4>Total Budget: ₹${result.total_budget} | Remaining: ₹${result.remaining_budget || 0}</h4>`;
+            if (result.jewelry_recommendations) {
+                result.jewelry_recommendations.forEach(item => {
+                    html += `<div style="margin-top:1rem; padding:1rem; border:1px solid var(--border); border-radius:6px;">
+                        <b>${item.item_type || 'Jewelry Piece'}</b> (${item.style || 'Standard'}) - ₹${item.estimated_price}<br>
+                        <small>${item.description}</small>`;
+                    if (item.shopping_links) {
+                        html += `<br>Shop: `;
+                        for (let [shop, link] of Object.entries(item.shopping_links)) {
+                            html += `<a href="${link}" target="_blank" style="margin-right:8px; color:var(--accent);">${shop}</a>`;
+                        }
+                    }
+                    html += `</div>`;
+                });
+            }
+            resultsContent.innerHTML = html;
+            } catch (error) {
+                resultsContent.textContent = error.message;
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Get Recommendations';
+            }
+        });
+    </script>
+</body>
+</html>

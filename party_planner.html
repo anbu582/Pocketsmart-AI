@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Party Budget Planner - PocketSmart AI</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="logo">PocketSmart AI</a>
+        <ul class="nav-links">
+            <li><a href="/home-planner">Home Planner</a></li>
+            <li><a href="/party-planner">Party Planner</a></li>
+            <li><a href="/jewelry-planner">Jewelry Planner</a></li>
+            <li><a href="/history">History</a></li>
+        </ul>
+    </nav>
+    <div class="container" style="max-width: 800px;">
+        <div class="card">
+            <h2>Party Budget Planner</h2>
+            <form id="partyForm">
+                <div class="grid-2">
+                    <div>
+                        <label>Total Budget (₹)</label>
+                        <input type="number" id="total_budget" required value="25000">
+                    </div>
+                    <div>
+                        <label>Number of Guests</label>
+                        <input type="number" id="num_guests" required value="20">
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div>
+                        <label>Party Type</label>
+                        <input type="text" id="party_type" required value="Birthday">
+                    </div>
+                    <div>
+                        <label>Venue Type</label>
+                        <input type="text" id="venue_type" value="Banquet Hall">
+                    </div>
+                </div>
+                <label>Special Requests / Themes</label>
+                <textarea id="additional_requirements" placeholder="E.g., Floral theme"></textarea>
+                <button type="submit" class="btn" style="width: 100%;">Generate Budget Plan</button>
+            </form>
+        </div>
+        <div id="results" class="card" style="display: none;">
+            <h3>Your Party Budget Plan</h3>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('partyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                total_budget: parseFloat(document.getElementById('total_budget').value),
+                num_guests: parseInt(document.getElementById('num_guests').value),
+                party_type: document.getElementById('party_type').value,
+                venue_type: document.getElementById('venue_type').value,
+                additional_requirements: document.getElementById('additional_requirements').value
+            };
+            const results = document.getElementById('results');
+            const resultsContent = document.getElementById('resultsContent');
+            const submitButton = e.currentTarget.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Building your plan...';
+            results.style.display = 'block';
+            resultsContent.textContent = 'Allocating your budget...';
+            try {
+                const res = await fetch('/party-budget', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (!res.ok) throw new Error(result.detail || 'Unable to create a plan right now.');
+            let html = `<h4>Total Budget: ₹${result.total_budget}</h4>`;
+            if (result.budget_breakdown) {
+                result.budget_breakdown.forEach(cat => {
+                    html += `<div style="margin-top:1rem;"><span class="badge">${cat.category}</span> - ₹${cat.allocation}<ul>`;
+                    cat.items.forEach(item => {
+                        html += `<li><b>${item.name}</b>: ₹${item.estimated_price} <br><small>${item.description}</small></li>`;
+                    });
+                    html += `</ul></div>`;
+                });
+            }
+                resultsContent.innerHTML = html;
+            } catch (error) {
+                resultsContent.textContent = error.message;
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Generate Budget Plan';
+            }
+        });
+    </script>
+</body>
+</html>

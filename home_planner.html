@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home Budget Planner - PocketSmart AI</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="logo">PocketSmart AI</a>
+        <ul class="nav-links">
+            <li><a href="/home-planner">Home Planner</a></li>
+            <li><a href="/party-planner">Party Planner</a></li>
+            <li><a href="/jewelry-planner">Jewelry Planner</a></li>
+            <li><a href="/history">History</a></li>
+        </ul>
+    </nav>
+    <div class="container" style="max-width: 800px;">
+        <div class="card">
+            <h2>Home Interior Budget Planner</h2>
+            <form id="homeForm">
+                <label>Total Budget (₹)</label>
+                <input type="number" id="total_budget" required value="50000">
+                
+                <div class="grid-2">
+                    <div>
+                        <label>Number of Lights/Fixtures</label>
+                        <input type="number" id="num_lights" required value="4">
+                    </div>
+                    <div>
+                        <label>Number of Ceiling Fans</label>
+                        <input type="number" id="num_fans" required value="2">
+                    </div>
+                </div>
+                
+                <div class="grid-2">
+                    <div>
+                        <label>Number of Furniture Pieces</label>
+                        <input type="number" id="num_furniture" required value="3">
+                    </div>
+                    <div>
+                        <label>Number of Dining Tables</label>
+                        <input type="number" id="num_dining_tables" required value="1">
+                    </div>
+                </div>
+                
+                <label>Special Requirements / Preferences</label>
+                <textarea id="additional_requirements" placeholder="E.g., Modern minimalist style"></textarea>
+                
+                <button type="submit" class="btn" style="width: 100%;">Generate Recommendations</button>
+            </form>
+        </div>
+        
+        <div id="results" class="card" style="display: none;">
+            <h3>Your Personalized Budget Plan</h3>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('homeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                total_budget: parseFloat(document.getElementById('total_budget').value),
+                num_lights: parseInt(document.getElementById('num_lights').value),
+                num_fans: parseInt(document.getElementById('num_fans').value),
+                num_furniture: parseInt(document.getElementById('num_furniture').value),
+                num_dining_tables: parseInt(document.getElementById('num_dining_tables').value),
+                additional_requirements: document.getElementById('additional_requirements').value
+            };
+            
+            const results = document.getElementById('results');
+            const resultsContent = document.getElementById('resultsContent');
+            const submitButton = e.currentTarget.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Building your plan...';
+            results.style.display = 'block';
+            resultsContent.textContent = 'Allocating your budget...';
+            try {
+                const res = await fetch('/home-budget', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (!res.ok) throw new Error(result.detail || 'Unable to create a plan right now.');
+            
+            let html = `<h4>Total Budget: ₹${result.total_budget} | Remaining: ₹${result.remaining_budget || 0}</h4>`;
+            if (result.budget_breakdown) {
+                result.budget_breakdown.forEach(cat => {
+                    html += `<div style="margin-top:1.5rem;"><span class="badge">${cat.category}</span> (Allocation: ₹${cat.allocation})<ul>`;
+                    cat.items.forEach(item => {
+                        html += `<li style="margin: 0.5rem 0;"><b>${item.name}</b> - ₹${item.estimated_price} (Qty: ${item.quantity})<br><small>${item.description}</small>`;
+                        if (item.shopping_links) {
+                            html += `<br>Shop: `;
+                            for (let [shop, link] of Object.entries(item.shopping_links)) {
+                                html += `<a href="${link}" target="_blank" style="margin-right:8px; color:var(--accent);">${shop}</a>`;
+                            }
+                        }
+                        html += `</li>`;
+                    });
+                    html += `</ul></div>`;
+                });
+            }
+                resultsContent.innerHTML = html;
+            } catch (error) {
+                resultsContent.textContent = error.message;
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Generate Recommendations';
+            }
+        });
+    </script>
+</body>
+</html>

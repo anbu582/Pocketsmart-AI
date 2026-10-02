@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Recommendation History - PocketSmart AI</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="logo">PocketSmart AI</a>
+        <ul class="nav-links">
+            <li><a href="/home-planner">Home Planner</a></li>
+            <li><a href="/party-planner">Party Planner</a></li>
+            <li><a href="/jewelry-planner">Jewelry Planner</a></li>
+            <li><a href="/history">History</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <h2>Your Recommendation History</h2>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Review and manage all your previous budget plans and recommendations.</p>
+        
+        {% if history %}
+            {% for item in history %}
+            <div class="card">
+                <span class="badge">{{ item.recommendation_type | upper }}</span>
+                <span style="float: right; color: var(--text-muted);">{{ item.timestamp }}</span>
+                <h4 style="margin-top: 1rem;">Total Budget: ₹{{ item.result_summary.total_budget }}</h4>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="card"><p>No past recommendation history found.</p></div>
+        {% endif %}
+    </div>
+</body>
+</html>

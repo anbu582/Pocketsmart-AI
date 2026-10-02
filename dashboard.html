@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - PocketSmart AI</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="logo">PocketSmart AI</a>
+        <ul class="nav-links">
+            <li><a href="/home-planner">Home Planner</a></li>
+            <li><a href="/party-planner">Party Planner</a></li>
+            <li><a href="/jewelry-planner">Jewelry Planner</a></li>
+            <li><a href="/history">History</a></li>
+            <li><form action="/logout" method="POST" style="display:inline;"><button type="submit" class="btn" style="background:#ef4444; padding:0.4rem 1rem;">Logout</button></form></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <h1>Welcome, {{ user.username }}!</h1>
+        <p style="color: var(--text-muted); margin-bottom: 2rem;">Choose a budget planner to get started with your personalized financial planning experience.</p>
+        
+        <div class="grid-2">
+            <div class="card">
+                <h3>🏠 Home Budget Planner</h3>
+                <p style="color: var(--text-muted); margin: 1rem 0;">Get customized AI recommendations for furniture, lighting, and fans within budget.</p>
+                <a href="/home-planner" class="btn">Get Started</a>
+            </div>
+            <div class="card">
+                <h3>🎉 Party Budget Planner</h3>
+                <p style="color: var(--text-muted); margin: 1rem 0;">Plan events with smart budget allocations for venue, catering, and entertainment.</p>
+                <a href="/party-planner" class="btn">Get Started</a>
+            </div>
+        </div>
+        <div class="card" style="margin-top: 1.5rem;">
+            <h3>💍 Jewelry Budget Planner</h3>
+            <p style="color: var(--text-muted); margin: 1rem 0;">Find ideal jewelry pieces matched to your occasion and outfit style with AI.</p>
+            <a href="/jewelry-planner" class="btn">Get Started</a>
+        </div>
+    </div>
+</body>
+</html>

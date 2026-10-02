@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - PocketSmart AI</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container" style="max-width: 450px; margin-top: 5rem;">
+        <div class="card">
+            <h2 style="text-align: center; margin-bottom: 1.5rem; color: var(--primary);">Welcome Back</h2>
+            <form id="loginForm">
+                <label>Username</label>
+                <input type="text" id="username" required placeholder="Enter username">
+                <label>Password</label>
+                <input type="password" id="password" required placeholder="Enter password">
+                <button type="submit" class="btn" style="width: 100%;">Sign In</button>
+            </form>
+            <p style="text-align: center; margin-top: 1rem;">Don't have an account? <a href="/register">Create Account</a></p>
+        </div>
+    </div>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new URLSearchParams();
+            formData.append('username', document.getElementById('username').value);
+            formData.append('password', document.getElementById('password').value);
+            
+            const res = await fetch('/token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
+            });
+            if (res.ok) {
+                window.location.href = '/dashboard';
+            } else {
+                alert('Invalid username or password');
+            }
+        });
+    </script>
+</body>
+</html>
